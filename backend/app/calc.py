@@ -1,6 +1,7 @@
 from app.formulas.bmi import calculate_bmi
 from app.formulas.bmr import calculate_bmr_mifflin_st_jeor
 from app.formulas.bodyfat import estimate_body_fat_percent_from_bmi
+from app.formulas.calories import calories_target_from_goal
 from app.formulas.ffmi import calculate_ffmi
 from app.formulas.forecast import forecast_weight_kg
 from app.formulas.macros import calculate_keto_macros
@@ -26,8 +27,7 @@ def calculate_all(user: UserInput, *, forecast_weeks: int = 24) -> CalcOutput:
     bf = estimate_body_fat_percent_from_bmi(bmi=bmi, age_years=norm.age_years, sex=user.sex)
     ffmi = calculate_ffmi(weight_kg=norm.weight_kg, height_cm=norm.height_cm, body_fat_percent=bf)
 
-    # For now calories_target = tdee (we'll add lose/gain surplus/deficit next milestone)
-    calories_target = tdee
+    calories_target = calories_target_from_goal(tdee=tdee, goal=user.goal)
 
     cal, protein_g, fat_g, net_carbs_g = calculate_keto_macros(
         calories_total=calories_target,
