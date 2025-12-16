@@ -10,6 +10,10 @@ dependencies = [
     "uvicorn>=0.38.0",
 ]
 
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
@@ -22,3 +26,6 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
+
+[tool.setuptools]
+packages = ["app"]
