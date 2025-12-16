@@ -42,6 +42,12 @@ class UserInput(BaseModel):
     protein_g_per_kg: float = Field(default=1.8, ge=0.5, le=4.0)
 
 
+class Goal(str, Enum):
+    lose = "lose"
+    maintain = "maintain"
+    gain = "gain"
+
+
 class Macros(BaseModel):
     calories_total: float
     protein_g: float
