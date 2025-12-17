@@ -5,6 +5,18 @@
   text-align: center;
 }
 
+.inputsPanel {
+  text-align: left;
+}
+
+.resultsPanel {
+  text-align: center;
+}
+
+.resultsPanel--calculated {
+  text-align: left;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

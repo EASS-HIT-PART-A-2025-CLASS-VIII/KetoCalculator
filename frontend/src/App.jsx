@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import "./App.css";
 import {
   CartesianGrid,
   Line,
@@ -144,15 +145,13 @@ export default function App() {
 
   return (
     <div
+      className="page"
       style={{
-        minHeight: "100vh",
         background: colors.bg,
-        padding: "36px 20px 72px",
-        boxSizing: "border-box",
         color: colors.text,
       }}
     >
-      <div style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gap: 16 }}>
+      <div className="appShell">
         <div
           style={{
             padding: "18px 20px",
@@ -162,8 +161,16 @@ export default function App() {
             boxShadow: "0 20px 60px rgba(14,165,233,0.35)",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr auto 1fr",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <div aria-hidden="true" />
+            <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: -0.5 }}>
                 Keto Calculator
               </div>
@@ -174,6 +181,7 @@ export default function App() {
             </div>
             <div
               style={{
+                justifySelf: "end",
                 fontSize: 12,
                 fontWeight: 800,
                 padding: "8px 12px",
@@ -204,7 +212,7 @@ export default function App() {
             title="Inputs"
             subtitle="All calculations use metric internally. Imperial is converted automatically."
           >
-            <div style={{ display: "grid", gap: 14 }}>
+            <div className="inputsPanel" style={{ display: "grid", gap: 14 }}>
               <div style={twoCol}>
                 <Field label="Unit system">
                   <select
@@ -346,58 +354,73 @@ export default function App() {
           {/* RIGHT: Results */}
           <div style={{ display: "grid", gap: 16 }}>
             <Card title="Results" subtitle="Clear summary of the main outputs.">
-              {error ? (
-                <div
-                  style={{
-                    border: "1px solid rgba(248,113,113,0.3)",
-                    background: "rgba(248,113,113,0.08)",
-                    padding: 12,
-                    borderRadius: 12,
-                    color: "#fecdd3",
-                    fontSize: 13,
-                  }}
-                >
-                  {error}
-                </div>
-              ) : !result ? (
-                <div style={{ fontSize: 14, color: colors.textMuted }}>
-                  Click <b>Calculate</b> to see your results.
-                </div>
-              ) : (
-                <div style={{ display: "grid", gap: 14 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-                    <Stat label="BMI" value={result.bmi.toFixed(2)} />
-                    <Stat label="BMR (kcal)" value={Math.round(result.bmr)} />
-                    <Stat label="TDEE (kcal)" value={Math.round(result.tdee)} />
-                  </div>
-
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
-                    <Stat
-                      label="Body fat % (approx)"
-                      value={result.body_fat_percent_estimate?.toFixed(1) ?? "n/a"}
-                    />
-                    <Stat label="FFMI" value={result.ffmi?.toFixed(2) ?? "n/a"} />
-                  </div>
-
+              <div className={result || error ? "resultsPanel resultsPanel--calculated" : "resultsPanel"}>
+                {error ? (
                   <div
                     style={{
-                      borderTop: `1px solid ${colors.border}`,
-                      paddingTop: 12,
-                      display: "grid",
-                      gap: 10,
+                      border: "1px solid rgba(248,113,113,0.3)",
+                      background: "rgba(248,113,113,0.08)",
+                      padding: 12,
+                      borderRadius: 12,
+                      color: "#fecdd3",
+                      fontSize: 13,
                     }}
                   >
-                    <div style={{ fontSize: 16, fontWeight: 800 }}>Macros</div>
+                    {error}
+                  </div>
+                ) : !result ? (
+                  <div style={{ fontSize: 14, color: colors.textMuted }}>
+                    Click <b>Calculate</b> to see your results.
+                  </div>
+                ) : (
+                  <div style={{ display: "grid", gap: 14 }}>
+                    <div
+                      style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}
+                    >
+                      <Stat label="BMI" value={result.bmi.toFixed(2)} />
+                      <Stat label="BMR (kcal)" value={Math.round(result.bmr)} />
+                      <Stat label="TDEE (kcal)" value={Math.round(result.tdee)} />
+                    </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
-                      <Stat label="Calories" value={Math.round(result.macros.calories_total)} />
-                      <Stat label="Protein (g)" value={Math.round(result.macros.protein_g)} />
-                      <Stat label="Fat (g)" value={Math.round(result.macros.fat_g)} />
-                      <Stat label="Net carbs (g)" value={Math.round(result.macros.net_carbs_g)} />
+                    <div
+                      style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}
+                    >
+                      <Stat
+                        label="Body fat % (approx)"
+                        value={result.body_fat_percent_estimate?.toFixed(1) ?? "n/a"}
+                      />
+                      <Stat
+                        label="FFMI (fat free mass index)"
+                        value={result.ffmi?.toFixed(2) ?? "n/a"}
+                      />
+                    </div>
+
+                    <div
+                      style={{
+                        borderTop: `1px solid ${colors.border}`,
+                        paddingTop: 12,
+                        display: "grid",
+                        gap: 10,
+                      }}
+                    >
+                      <div style={{ fontSize: 16, fontWeight: 800 }}>Macros</div>
+
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(4, 1fr)",
+                          gap: 12,
+                        }}
+                      >
+                        <Stat label="Calories" value={Math.round(result.macros.calories_total)} />
+                        <Stat label="Protein (g)" value={Math.round(result.macros.protein_g)} />
+                        <Stat label="Fat (g)" value={Math.round(result.macros.fat_g)} />
+                        <Stat label="Net carbs (g)" value={Math.round(result.macros.net_carbs_g)} />
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </Card>
 
             <Card title="Weight forecast" subtitle="Weekly projection based on your calorie target.">
