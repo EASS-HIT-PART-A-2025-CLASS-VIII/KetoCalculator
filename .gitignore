@@ -43,3 +43,7 @@ Thumbs.db
 # --------------------
 node_modules/
 dist/
+
+#aws
+aws
+awscliv2.zip

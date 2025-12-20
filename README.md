@@ -46,6 +46,7 @@ A full-stack keto nutrition calculator that estimates calories, macros, and a we
 **Infrastructure**
 - Docker Compose
 - Environment-based secrets
+- AWS (deployed)
 
 ## :open_file_folder: Project structure
 
@@ -67,6 +68,8 @@ KetoCalculator/
     package.json
   docker-compose.yml
   README.md
+  docs/
+    _AWS-diagram.png     # Deployment diagram (AWS)
 ```
 
 ## :rocket: Running the app
@@ -175,6 +178,17 @@ uv run ruff check .
 Notes:
 - Gemini responses can be slow or rate-limited; retry if you see an overload message.
 - Always sanity-check totals and suitability for your needs.
+
+## :cloud: AWS deployment (live)
+
+- Live URL: **https://d2xlvapgg8htpu.cloudfront.net/**
+- Architecture:  
+  - Users hit CloudFront.  
+  - CloudFront serves the frontend from S3 and routes API requests to the backend on an EC2 instance (Dockerized FastAPI).  
+  - Backend makes outbound calls to Gemini for meal plan generation.  
+- Diagram (GitHub-visible):  
+  ![AWS architecture](docs/_AWS-diagram.png)
+- Secrets: set `GEMINI_API_KEY` in your AWS environment (e.g., SSM Parameter Store/Secrets Manager or task/env vars) before starting the backend service.
 
 ## :brain: Scientific basis (high level)
 
