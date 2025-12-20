@@ -69,58 +69,56 @@ KetoCalculator/
   README.md
 ```
 
-## :rocket: Run locally (recommended)
+## :rocket: Running the app
 
-### Backend (FastAPI)
+### 1) Full stack with Docker Compose (backend + frontend)
 
-**Requirements:** Python 3.12, `uv`
+```bash
+# from repo root
+cp .env.example .env   # if you have one; otherwise create .env (see env section)
+docker compose up --build
+```
+
+- Backend: `http://localhost:8000`
+- Frontend: `http://localhost:5173`
+- Compose reads the root `.env` and passes `GEMINI_API_KEY` to the backend container.
+
+### 2) Backend locally, frontend locally (dev workflow)
+
+Backend (FastAPI)
 
 ```bash
 cd backend
 uv sync
-uv run uvicorn app.main:app --reload
+GEMINI_API_KEY=your_google_api_key_here uv run uvicorn app.main:app --reload
+# API at http://localhost:8000
 ```
 
-- API: `http://localhost:8000`
-- Swagger UI: `http://localhost:8000/docs`
-
-### Frontend (Vite + React)
-
-**Requirements:** Node.js (LTS), npm
+Frontend (Vite + React)
 
 ```bash
 cd frontend
 npm install
 npm run dev -- --host
+# UI at http://localhost:5173 (proxy to http://localhost:8000)
 ```
 
-- Frontend: `http://localhost:5173`
-- API requests are proxied to the backend via Vite config.
-
-## :whale: Run with Docker
-
-### Backend only
+### 3) Backend only with Docker (no frontend)
 
 ```bash
 docker build -t keto-api ./backend
-docker run --rm -p 8000:8000 keto-api
-```
-
-### Full setup (recommended)
-
-```bash
-docker compose up --build
+docker run --rm -p 8000:8000 -e GEMINI_API_KEY=your_google_api_key_here keto-api
 ```
 
 ## :lock: Environment variables
 
-Create a `.env` file in the repo root (do not commit it):
+Create a `.env` in the repo root (used by Docker Compose and can be sourced for local runs):
 
 ```bash
 GEMINI_API_KEY=your_google_api_key_here
 ```
 
-Docker Compose automatically loads `.env`.
+For local backend without Compose, either `export GEMINI_API_KEY=...` or inline it (see commands above).
 
 ## :white_check_mark: Tests & code quality
 
@@ -167,12 +165,23 @@ uv run ruff check .
 }
 ```
 
+## :joystick: Using the app
+
+1) Enter inputs (unit system, goal, sex, age, height, weight, activity) and click **Calculate**.  
+2) Review the **Results** panel (BMI, BMR, TDEE, macros) and the **Weight forecast** chart.  
+3) A **Meal Plan** panel appears after calculating. Toggle dietary restrictions (kosher, halal, vegan, vegetarian) and click **Generate meal plan (LLM)**. The selected flags are sent to the backend and incorporated into the LLM prompt.  
+4) View the generated plan (days, meals, items, totals), shopping list, and assumptions.  
+
+Notes:
+- Gemini responses can be slow or rate-limited; retry if you see an overload message.
+- Always sanity-check totals and suitability for your needs.
+
 ## :brain: Scientific basis (high level)
 
 All core calculations are based on commonly accepted scientific models:
 
 - BMI - World Health Organization definition
-- BMR - Mifflin-St Jeor equation
+- BMR - Mifflin-St Jeor equation (1990)
 - TDEE - activity multiplier method
 - Weight change - ~7,700 kcal per 1 kg fat mass (simplified heuristic)
 - Body fat % (estimate) - BMI-based approximation
@@ -181,6 +190,7 @@ All core calculations are based on commonly accepted scientific models:
 ## :books: References
 
 - WHO - Body Mass Index: https://www.who.int/data/gho/data/themes/theme-details/GHO/body-mass-index
+- Mifflin MD, St Jeor ST (1990): https://doi.org/10.1093/ajcn/51.2.241
 - Hall et al., 2011 - energy balance & weight change: https://doi.org/10.1016/j.metabol.2010.11.012
 
 ## :warning: Disclaimer
