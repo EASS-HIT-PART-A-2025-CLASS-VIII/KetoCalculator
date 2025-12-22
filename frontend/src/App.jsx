@@ -86,7 +86,15 @@ function Stat({ label, value }) {
 
 function MealPlanContent({ mealPlan, mealPlanError, mealPlanLoading, onRetry }) {
   if (mealPlanLoading) {
-    return <div style={{ fontSize: 14, color: colors.textMuted }}>Generating meal plan...</div>;
+    return (
+      <div className="mealplan-loading" role="status" aria-live="polite">
+        <div className="mealplan-spinner" aria-hidden="true" />
+        <div>
+          <div className="mealplan-loading__title">Please wait</div>
+          <div className="mealplan-loading__subtitle">Generating meal plan...</div>
+        </div>
+      </div>
+    );
   }
 
   if (mealPlanError) {

@@ -21,6 +21,46 @@
   text-align: left;
 }
 
+.mealplan-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  text-align: left;
+}
+
+.mealplan-loading__title {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.mealplan-loading__subtitle {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.mealplan-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 3px solid rgba(34, 211, 238, 0.25);
+  border-top-color: rgba(34, 211, 238, 1);
+  animation: mealplan-spin 0.9s linear infinite;
+}
+
+@keyframes mealplan-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
