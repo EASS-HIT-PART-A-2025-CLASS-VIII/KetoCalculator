@@ -71,7 +71,7 @@ KetoCalculator/
   docs/
     _AWS-diagram.png     # Deployment diagram (AWS)
 ```
-## :cloud: AWS deployment (live)
+## :cloud: AWS deployment (Currently offline to save resources)
 
 - Live URL: **https://d2xlvapgg8htpu.cloudfront.net/**
 - Architecture:  
