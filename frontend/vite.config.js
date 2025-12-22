@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,                 // allow external access
-    allowedHosts: "all",         
+    allowedHosts: ["all", "d2xlvapgg8htpu.cloudfront.net"],         // fixes CloudFront "Blocked request"
     proxy: {
       "/api": {
         target: "http://backend:8000", // backend service name on docker network
