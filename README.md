@@ -85,7 +85,7 @@ KetoCalculator/
 
 ## :rocket: Running the app
 
-### 1) Full stack with Docker Compose (backend + frontend)
+### Full stack with Docker Compose (backend + frontend)
 
 ```bash
 # from repo root
@@ -97,42 +97,13 @@ docker compose up --build
 - Frontend: `http://localhost:5173`
 - Compose reads the root `.env` and passes `GEMINI_API_KEY` to the backend container.
 
-### 2) Backend locally, frontend locally (dev workflow)
-
-Backend (FastAPI)
-
-```bash
-cd backend
-uv sync
-GEMINI_API_KEY=your_google_api_key_here uv run uvicorn app.main:app --reload
-# API at http://localhost:8000
-```
-
-Frontend (Vite + React)
-
-```bash
-cd frontend
-npm install
-npm run dev -- --host
-# UI at http://localhost:5173 (proxy to http://localhost:8000)
-```
-
-### 3) Backend only with Docker (no frontend)
-
-```bash
-docker build -t keto-api ./backend
-docker run --rm -p 8000:8000 -e GEMINI_API_KEY=your_google_api_key_here keto-api
-```
-
 ## :lock: Environment variables
 
-Create a `.env` in the repo root (used by Docker Compose and can be sourced for local runs):
+Create a `.env` in the repo root (used by Docker Compose):
 
 ```bash
 GEMINI_API_KEY=your_google_api_key_here
 ```
-
-For local backend without Compose, either `export GEMINI_API_KEY=...` or inline it (see commands above).
 
 ## :white_check_mark: Tests & code quality
 
