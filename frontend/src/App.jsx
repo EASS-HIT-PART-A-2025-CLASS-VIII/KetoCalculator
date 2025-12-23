@@ -261,6 +261,19 @@ export default function App() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  async function readJsonResponse(res) {
+    const text = await res.text();
+    if (!text) {
+      return { data: null, errorText: "Empty response from server." };
+    }
+
+    try {
+      return { data: JSON.parse(text), errorText: null };
+    } catch (e) {
+      return { data: null, errorText: `Non-JSON response: ${text.slice(0, 200)}` };
+    }
+  }
+
   async function onCalculate() {
     setMealPlan(null);
     setMealPlanError("");
@@ -282,8 +295,9 @@ export default function App() {
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Request failed");
+      const { data, errorText } = await readJsonResponse(res);
+      if (!res.ok) throw new Error(data?.detail || errorText || "Request failed");
+      if (!data) throw new Error("Empty response from server.");
 
       setResult(data);
     } catch (e) {
@@ -312,8 +326,9 @@ export default function App() {
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Meal plan request failed");
+      const { data, errorText } = await readJsonResponse(res);
+      if (!res.ok) throw new Error(data?.detail || errorText || "Meal plan request failed");
+      if (!data) throw new Error("Empty response from server.");
 
       setMealPlan(data);
     } catch (e) {
