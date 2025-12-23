@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import time
@@ -133,6 +134,7 @@ def generate_meal_plan(user: UserInput, calc: CalcOutput) -> MealPlanResponse:
                 contents=prompt,
                 config=GenerateContentConfig(
                     response_mime_type="application/json",
+                    response_schema=MealPlanResponse.model_json_schema(),
                     # Keep responses bounded to reduce latency/timeouts.
                     max_output_tokens=1400,
                 ),
@@ -140,10 +142,20 @@ def generate_meal_plan(user: UserInput, calc: CalcOutput) -> MealPlanResponse:
             text = resp.text or ""
             json_text = _extract_json(text)
             try:
-                return MealPlanResponse.model_validate_json(json_text)
+                data = json.loads(json_text)
+            except json.JSONDecodeError as e:
+                preview = (text or "")[:600].replace("\n", "\\n")
+                raise RuntimeError(
+                    f"LLM returned non-JSON: {e.msg} at line {e.lineno} col {e.colno}. "
+                    f"Preview: {preview}"
+                ) from e
+            try:
+                return MealPlanResponse.model_validate(data)
             except Exception as e:
                 preview = (text or "")[:600].replace("\n", "\\n")
-                raise RuntimeError(f"LLM returned invalid JSON. Preview: {preview}") from e
+                raise RuntimeError(
+                    f"LLM returned JSON that doesn't match schema. Preview: {preview}"
+                ) from e
 
         except errors.ServerError as e:
             # Typical cause: "model is overloaded" (503)
