@@ -19,7 +19,6 @@ def test_normalize_metric_ok():
 
 
 def test_normalize_imperial_ok():
-    # 180 cm ≈ 70.866 in, 80 kg ≈ 176.370 lb
     user = UserInput(
         unit_system=UnitSystem.imperial,
         sex=Sex.male,

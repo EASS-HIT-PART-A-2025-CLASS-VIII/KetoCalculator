@@ -1,4 +1,3 @@
-# calculates weight forecast based on TDEE and calorie target
 KCAL_PER_KG = 7700.0
 
 
@@ -37,7 +36,6 @@ def forecast_weight_kg(
 
     for week in range(1, weeks + 1):
         current = current + delta_kg_per_week
-        # Avoid negative projections for extreme deficits
         current = max(0.0, current)
         points.append((week, current))
 

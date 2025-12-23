@@ -4,7 +4,6 @@ from app.formulas.bmi import calculate_bmi
 
 
 def test_bmi_known_value():
-    # BMI = 80 / 1.8^2 = 24.691358...
     bmi = calculate_bmi(weight_kg=80, height_cm=180)
     assert bmi == pytest.approx(24.6914, abs=1e-4)
 

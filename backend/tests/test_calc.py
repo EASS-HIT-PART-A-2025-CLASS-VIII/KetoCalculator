@@ -18,4 +18,4 @@ def test_calculate_all_happy_path_metric():
     assert out.bmr > 0
     assert out.tdee > 0
     assert out.macros.calories_total > 0
-    assert len(out.forecast) == 5  # week 0..4
+    assert len(out.forecast) == 5

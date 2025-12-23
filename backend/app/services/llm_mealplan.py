@@ -43,7 +43,6 @@ SCHEMA_EXAMPLE = """
 """.strip()
 
 
-# mealplan prompt helpers
 def _mealplan_pref_lines(user: UserInput) -> list[str]:
     mp = user.mealplan
     lines: list[str] = [
@@ -56,15 +55,12 @@ def _mealplan_pref_lines(user: UserInput) -> list[str]:
     if mp.meals_per_day == 1:
         lines.append('  - "meal"')
     else:
-        # Simple consistent naming, still flexible
-        # (If 2 meals: lunch+dinner; 3: breakfast+lunch+dinner; 4+: add snacks)
         base = ['"breakfast"', '"lunch"', '"dinner"', '"snack"', '"snack2"', '"snack3"']
         lines.append("  - " + ", ".join(base[: mp.meals_per_day]))
 
     return lines
 
 
-# dietary preference helpers
 def _dietary_lines(user: UserInput) -> list[str]:
     prefs = user.dietary
 
@@ -122,7 +118,6 @@ def generate_meal_plan(user: UserInput, calc: CalcOutput) -> MealPlanResponse:
     client = genai.Client()
     prompt = build_prompt(user, calc)
 
-    # Small retry loop for transient overload (503)
     attempts = 3
     base_sleep = 1.0
 
@@ -135,7 +130,6 @@ def generate_meal_plan(user: UserInput, calc: CalcOutput) -> MealPlanResponse:
                 config=GenerateContentConfig(
                     response_mime_type="application/json",
                     response_schema=MealPlanResponse.model_json_schema(),
-                    # Keep responses bounded to reduce latency/timeouts.
                     max_output_tokens=1400,
                 ),
             )
@@ -168,17 +162,14 @@ def generate_meal_plan(user: UserInput, calc: CalcOutput) -> MealPlanResponse:
                 ) from e
 
         except errors.ServerError as e:
-            # Typical cause: "model is overloaded" (503)
             last_err = e
             if i == attempts - 1:
                 break
 
-            # exponential backoff with jitter
             sleep_s = base_sleep * (2**i) + random.uniform(0, 0.5)
             time.sleep(sleep_s)
 
         except errors.APIError as e:
-            # 429 quota/rate limit
             if getattr(e, "status_code", None) == 429:
                 raise RuntimeError(f"RATE_LIMIT:{e}") from e
             raise RuntimeError(f"Gemini API error: {e}") from e
@@ -191,14 +182,11 @@ def generate_meal_plan(user: UserInput, calc: CalcOutput) -> MealPlanResponse:
 def _extract_json(text: str) -> str:
     t = text.strip()
 
-    # Remove markdown code fences if present
     if t.startswith("```"):
         t = t.strip("`").strip()
-        # Sometimes it starts with "json\n"
         if t.lower().startswith("json"):
             t = t[4:].strip()
 
-    # If there's extra text before/after JSON, try to slice the first {...} block
     start = t.find("{")
     end = t.rfind("}")
     if start != -1 and end != -1 and end > start:

@@ -8,7 +8,7 @@ class MealItem(BaseModel):
 
 
 class Meal(BaseModel):
-    meal_name: str  # e.g., breakfast/lunch/dinner/snack
+    meal_name: str
     items: list[MealItem]
     protein_g: float = Field(ge=0)
     fat_g: float = Field(ge=0)
@@ -17,7 +17,7 @@ class Meal(BaseModel):
 
 
 class DayPlan(BaseModel):
-    day: int  # 1..N
+    day: int
     meals: list[Meal]
     totals: Meal
 

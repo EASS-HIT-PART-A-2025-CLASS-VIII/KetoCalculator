@@ -14,7 +14,6 @@ def health():
     return {"status": "ok"}
 
 
-# --- shared handlers (one source of truth) ---
 def do_calc(user: UserInput) -> CalcOutput:
     try:
         return calculate_all(user)
@@ -35,7 +34,6 @@ def do_mealplan(user: UserInput) -> MealPlanResponse:
         raise HTTPException(status_code=503, detail=msg) from e
 
 
-# --- old routes (tests + local dev) ---
 @app.post("/calc", response_model=CalcOutput)
 def calc(user: UserInput) -> CalcOutput:
     return do_calc(user)
@@ -46,7 +44,6 @@ def mealplan(user: UserInput) -> MealPlanResponse:
     return do_mealplan(user)
 
 
-# --- new routes (CloudFront /api/*) ---
 @api.get("/health")
 def api_health():
     return {"status": "ok"}

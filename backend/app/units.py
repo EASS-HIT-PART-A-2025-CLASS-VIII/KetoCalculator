@@ -2,8 +2,6 @@ from dataclasses import dataclass
 
 from .models import UnitSystem, UserInput
 
-# Normalizing user inputs to metric system for internal calculations
-
 LB_TO_KG = 0.45359237
 IN_TO_CM = 2.54
 
