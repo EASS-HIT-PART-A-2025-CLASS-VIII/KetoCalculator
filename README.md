@@ -39,6 +39,7 @@ A full-stack keto nutrition calculator that estimates calories, macros, and a we
 - `uv` dependency management
 - Pytest + Ruff
 - Docker
+- Pydantic
 
 **Frontend**
 - React + Vite
