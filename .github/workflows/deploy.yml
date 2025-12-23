@@ -5,9 +5,8 @@ on:
     branches: [main]
 
 jobs:
-  test_build_deploy:
+  backend_to_lambda:
     runs-on: ubuntu-latest
-
     permissions:
       id-token: write
       contents: read
@@ -16,24 +15,20 @@ jobs:
       AWS_REGION: eu-central-1
       AWS_ACCOUNT_ID: "874043936756"
       ECR_BACKEND_REPO: "keto-backend"
-      ECR_FRONTEND_REPO: "keto-frontend"
+      LAMBDA_FUNCTION_NAME: "keto-backend-function"
 
     steps:
       - uses: actions/checkout@v4
 
-      # 1) Configure AWS creds via OIDC (no stored AWS keys)
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::874043936756:role/GitHubOIDC
           aws-region: ${{ env.AWS_REGION }}
 
-      # 2) Login to ECR
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
-        # Official action for ECR login :contentReference[oaicite:10]{index=10}
 
-      # 3) Backend tests (uv/pytest/ruff) - optional but recommended
       - name: Backend - install deps and run tests
         working-directory: backend
         run: |
@@ -43,29 +38,52 @@ jobs:
           uv run ruff check .
           uv run pytest -q
 
-      # 4) Build & push backend image
-      - name: Build and push backend
+      - name: Build and push backend image
         run: |
-          docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_BACKEND_REPO:latest ./backend
-          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_BACKEND_REPO:latest
+          IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_BACKEND_REPO:latest
+          docker build -t $IMAGE_URI ./backend
+          docker push $IMAGE_URI
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
-      # 5) Build & push frontend image
-      - name: Build and push frontend
+      - name: Update Lambda to new image
         run: |
-          docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_FRONTEND_REPO:latest ./frontend
-          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_FRONTEND_REPO:latest
+          aws lambda update-function-code \
+            --function-name "$LAMBDA_FUNCTION_NAME" \
+            --image-uri "$IMAGE_URI" \
+            --region "$AWS_REGION"
 
-      # 6) Deploy on EC2 via SSM RunCommand (no SSH)
-      - name: Deploy on EC2 via SSM
+  frontend_to_s3:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      AWS_REGION: eu-central-1
+      S3_BUCKET: "ketocalculator-frontend"
+      CLOUDFRONT_DISTRIBUTION_ID: "E34YAA98S6A5FC"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::874043936756:role/GitHubOIDC
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Frontend - install & build
+        working-directory: frontend
         run: |
-          aws ssm send-command \
-            --document-name "AWS-RunShellScript" \
-            --targets "Key=instanceids,Values=i-0866af5dccc1bf743" \
-            --comment "Deploy KetoCalculator" \
-            --parameters 'commands=[
-              "cd /home/ec2-user/KetoCalculator",
-              "docker compose pull",
-              "docker compose up -d",
-              "docker image prune -f"
-            ]' \
-            --region $AWS_REGION
+          npm ci
+          npm run build
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync frontend/dist "s3://$S3_BUCKET" --delete
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" \
+            --paths "/*"
