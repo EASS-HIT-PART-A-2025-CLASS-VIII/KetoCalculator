@@ -131,7 +131,11 @@ def generate_meal_plan(user: UserInput, calc: CalcOutput) -> MealPlanResponse:
             resp = client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=prompt,
-                config=GenerateContentConfig(response_mime_type="application/json"),
+                config=GenerateContentConfig(
+                    response_mime_type="application/json",
+                    # Keep responses bounded to reduce latency/timeouts.
+                    max_output_tokens=1400,
+                ),
             )
             text = resp.text or ""
             json_text = _extract_json(text)
