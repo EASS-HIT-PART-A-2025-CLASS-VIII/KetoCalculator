@@ -71,13 +71,18 @@ KetoCalculator/
   docs/
     _AWS-diagram.png     # Deployment diagram (AWS)
 ```
-## :cloud: AWS deployment (Currently offline to save resources)
+## :cloud: AWS deployment
 
 - Live URL: **https://d2xlvapgg8htpu.cloudfront.net/**
-- Architecture:  
-  - Users hit CloudFront.  
-  - CloudFront serves the frontend from S3 and routes API requests to the backend on an EC2 instance (Dockerized FastAPI).  
-  - Backend makes outbound calls to Gemini for meal plan generation.  
+- Runtime (when a user uses the site):  
+  - User → Browser → CloudFront  
+  - CloudFront → S3 (static frontend: HTML/CSS/JS)  
+  - CloudFront → Lambda Function URL (for `/api/*`)  
+  - Lambda → Gemini API (outbound HTTPS)
+- CI/CD (when you push to GitHub):  
+  - GitHub Actions → S3 (upload `frontend/dist`)  
+  - GitHub Actions → ECR (push backend container image)  
+  - Lambda pulls from ECR (when you update the function to the new image URI; AWS then fetches the image)
 - Diagram (GitHub-visible):  
   ![AWS architecture](docs/_AWS-diagram.png)
 - Secrets: set `GEMINI_API_KEY` in your AWS environment (e.g., SSM Parameter Store/Secrets Manager or task/env vars) before starting the backend service.
