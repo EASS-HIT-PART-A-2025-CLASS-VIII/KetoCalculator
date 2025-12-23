@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 class MealItem(BaseModel):
     name: str
-    grams: float = Field(gt=0)
+    grams: float = Field(ge=0.1)
     notes: str | None = None
 
 
