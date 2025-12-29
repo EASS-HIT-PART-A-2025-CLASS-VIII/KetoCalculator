@@ -139,9 +139,9 @@ function MealPlanContent({ mealPlan, mealPlanError, mealPlanLoading, onRetry }) 
 
   return (
     <div style={{ display: "grid", gap: 14 }}>
-      {mealPlan?.days?.map((day) => (
+      {mealPlan?.generated_mealplan?.map((day, dayIndex) => (
         <div
-          key={day.day}
+          key={`day-${dayIndex}`}
           style={{
             border: `1px solid ${colors.border}`,
             borderRadius: 16,
@@ -150,13 +150,13 @@ function MealPlanContent({ mealPlan, mealPlanError, mealPlanLoading, onRetry }) 
           }}
         >
           <div style={{ fontSize: 16, fontWeight: 900, marginBottom: 10, color: colors.text }}>
-            Day {day.day}
+            Meal plan
           </div>
 
           <div style={{ display: "grid", gap: 10 }}>
             {day.meals?.map((meal, idx) => (
               <div
-                key={`${day.day}-${idx}`}
+                key={`meal-${dayIndex}-${idx}`}
                 style={{
                   border: `1px solid ${colors.border}`,
                   borderRadius: 12,
@@ -241,7 +241,6 @@ export default function App() {
     vegetarian: false,
   });
   const [mealsPerDay, setMealsPerDay] = useState(3);
-  const [planDays, setPlanDays] = useState(1);
   const [form, setForm] = useState(defaultForm);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -290,7 +289,6 @@ export default function App() {
           dietary: dietaryRestrictions,
           mealplan: {
             meals_per_day: mealsPerDay,
-            days: planDays,
           },
         }),
       });
@@ -321,7 +319,6 @@ export default function App() {
           dietary: dietaryRestrictions,
           mealplan: {
             meals_per_day: mealsPerDay,
-            days: planDays,
           },
         }),
       });
@@ -809,20 +806,6 @@ export default function App() {
                           <option value={4}>4</option>
                           <option value={5}>5</option>
                           <option value={6}>6</option>
-                        </select>
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 6 }}>Number of days</div>
-                        <select
-                          value={planDays}
-                          onChange={(e) => setPlanDays(Number(e.target.value))}
-                          style={{ ...inputStyle, height: 44 }}
-                        >
-                          {[1, 2, 3, 4, 5, 6, 7].map((d) => (
-                            <option key={d} value={d}>
-                              {d}
-                            </option>
-                          ))}
                         </select>
                       </div>
                     </div>

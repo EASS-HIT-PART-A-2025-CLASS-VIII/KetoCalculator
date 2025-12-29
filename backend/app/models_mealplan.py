@@ -17,12 +17,11 @@ class Meal(BaseModel):
 
 
 class DayPlan(BaseModel):
-    day: int
     meals: list[Meal]
-    totals: Meal
+    totals: Meal | None = None
 
 
 class MealPlanResponse(BaseModel):
-    days: list[DayPlan]
-    shopping_list: list[str]
-    assumptions: list[str]
+    generated_mealplan: list[DayPlan]
+    shopping_list: list[str] = Field(default_factory=list)
+    assumptions: list[str] = Field(default_factory=list)

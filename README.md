@@ -128,9 +128,8 @@ uv run ruff check .
 
 ```json
 {
-  "days": [
+  "generated_mealplan": [
     {
-      "day": 1,
       "meals": [
         {
           "meal_name": "lunch",
