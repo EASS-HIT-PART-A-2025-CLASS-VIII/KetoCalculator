@@ -160,7 +160,7 @@ uv run ruff check .
 1) Enter inputs (unit system, goal, sex, age, height, weight, activity) and click **Calculate**.  
 2) Review the **Results** panel (BMI, BMR, TDEE, macros) and the **Weight forecast** chart.  
 3) A **Meal Plan** panel appears after calculating. Toggle dietary restrictions (kosher, halal, vegan, vegetarian) and click **Generate meal plan (LLM)**. The selected flags are sent to the backend and incorporated into the LLM prompt.  
-4) View the generated plan (days, meals, items, totals), shopping list, and assumptions.  
+4) View the generated plan (meals, items, totals), shopping list, and assumptions.  
 
 Notes:
 - Gemini responses can be slow or rate-limited; retry if you see an overload message.

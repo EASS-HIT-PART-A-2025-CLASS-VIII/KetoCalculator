@@ -250,6 +250,30 @@ export default function App() {
   const [isNarrow, setIsNarrow] = useState(
     typeof window !== "undefined" ? window.innerWidth < 1040 : false
   );
+
+  // Goal-based defaults for protein ratio and calorie modifier
+  const proteinDefaults = { lose: 1.8, maintain: 1.6, gain: 2.2 };
+  const calorieModifierDefaults = { lose: -20, maintain: 0, gain: 20 };
+
+  const [advancedMode, setAdvancedMode] = useState(false);
+  const [advancedSettings, setAdvancedSettings] = useState({
+    calorie_modifier: calorieModifierDefaults[form.goal] || 0,
+    protein_g_per_kg: proteinDefaults[form.goal] || 1.6,
+    net_carbs_g: 20,
+    body_fat_percent_override: "",
+  });
+
+  // Update defaults when goal changes
+  useEffect(() => {
+    if (!advancedMode) {
+      setAdvancedSettings((prev) => ({
+        ...prev,
+        protein_g_per_kg: proteinDefaults[form.goal] || 1.6,
+        calorie_modifier: calorieModifierDefaults[form.goal] || 0,
+      }));
+    }
+  }, [form.goal]);
+
   const twoCol = {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
@@ -281,16 +305,29 @@ export default function App() {
     setLoading(true);
 
     try {
+      // Build request payload
+      const payload = {
+        ...form,
+        dietary: dietaryRestrictions,
+        mealplan: {
+          meals_per_day: mealsPerDay,
+        },
+      };
+
+      // Include advanced settings if in advanced mode
+      if (advancedMode) {
+        payload.calorie_modifier = advancedSettings.calorie_modifier;
+        payload.protein_g_per_kg = advancedSettings.protein_g_per_kg;
+        payload.net_carbs_g = advancedSettings.net_carbs_g;
+        if (advancedSettings.body_fat_percent_override !== "") {
+          payload.body_fat_percent_override = Number(advancedSettings.body_fat_percent_override);
+        }
+      }
+
       const res = await fetch("/api/calc", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          dietary: dietaryRestrictions,
-          mealplan: {
-            meals_per_day: mealsPerDay,
-          },
-        }),
+        body: JSON.stringify(payload),
       });
 
       const { data, errorText } = await readJsonResponse(res);
@@ -311,16 +348,29 @@ export default function App() {
     setMealPlanLoading(true);
 
     try {
+      // Build request payload
+      const payload = {
+        ...form,
+        dietary: dietaryRestrictions,
+        mealplan: {
+          meals_per_day: mealsPerDay,
+        },
+      };
+
+      // Include advanced settings if in advanced mode
+      if (advancedMode) {
+        payload.calorie_modifier = advancedSettings.calorie_modifier;
+        payload.protein_g_per_kg = advancedSettings.protein_g_per_kg;
+        payload.net_carbs_g = advancedSettings.net_carbs_g;
+        if (advancedSettings.body_fat_percent_override !== "") {
+          payload.body_fat_percent_override = Number(advancedSettings.body_fat_percent_override);
+        }
+      }
+
       const res = await fetch("/api/mealplan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          dietary: dietaryRestrictions,
-          mealplan: {
-            meals_per_day: mealsPerDay,
-          },
-        }),
+        body: JSON.stringify(payload),
       });
 
       const { data, errorText } = await readJsonResponse(res);
@@ -455,6 +505,67 @@ export default function App() {
             subtitle="All calculations use metric internally. Imperial is converted automatically."
           >
             <div className="inputsPanel" style={{ display: "grid", gap: 14 }}>
+              {/* Simple/Advanced Toggle */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "10px 14px",
+                  borderRadius: 12,
+                  background: "rgba(255,255,255,0.03)",
+                  border: `1px solid ${colors.border}`,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: advancedMode ? 500 : 700,
+                    color: advancedMode ? colors.textMuted : colors.accent,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setAdvancedMode(false)}
+                >
+                  Simple
+                </span>
+                <div
+                  onClick={() => setAdvancedMode(!advancedMode)}
+                  style={{
+                    width: 44,
+                    height: 24,
+                    borderRadius: 12,
+                    background: advancedMode
+                      ? `linear-gradient(120deg, ${colors.accentBold}, ${colors.accent})`
+                      : "rgba(255,255,255,0.1)",
+                    padding: 3,
+                    cursor: "pointer",
+                    transition: "background 150ms ease",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: 9,
+                      background: "white",
+                      transform: advancedMode ? "translateX(20px)" : "translateX(0)",
+                      transition: "transform 150ms ease",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                    }}
+                  />
+                </div>
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: advancedMode ? 700 : 500,
+                    color: advancedMode ? colors.accent : colors.textMuted,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setAdvancedMode(true)}
+                >
+                  Advanced
+                </span>
+              </div>
               <div style={twoCol}>
                 <Field label="Unit system">
                   <select
@@ -562,6 +673,88 @@ export default function App() {
                   <option value="athlete">Athlete</option>
                 </select>
               </Field>
+
+              {/* Advanced Mode Inputs */}
+              {advancedMode && (
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 12,
+                    padding: 14,
+                    borderRadius: 14,
+                    background: "rgba(255,255,255,0.02)",
+                    border: `1px solid ${colors.border}`,
+                  }}
+                >
+                  <div style={{ fontSize: 13, fontWeight: 700, color: colors.text, marginBottom: 4 }}>
+                    Advanced Settings
+                  </div>
+                  <div style={twoCol}>
+                    <Field label="Calorie Modifier (%)" hint={`Default: ${calorieModifierDefaults[form.goal] || 0}% for ${form.goal}`}>
+                      <input
+                        style={inputStyle}
+                        type="number"
+                        value={advancedSettings.calorie_modifier}
+                        onChange={(e) =>
+                          setAdvancedSettings((prev) => ({
+                            ...prev,
+                            calorie_modifier: Number(e.target.value),
+                          }))
+                        }
+                      />
+                    </Field>
+                    <Field label="Protein Ratio (g/kg)" hint={`Default: ${proteinDefaults[form.goal] || 1.6} for ${form.goal}`}>
+                      <input
+                        style={inputStyle}
+                        type="number"
+                        min={0.5}
+                        max={4}
+                        step={0.1}
+                        value={advancedSettings.protein_g_per_kg}
+                        onChange={(e) =>
+                          setAdvancedSettings((prev) => ({
+                            ...prev,
+                            protein_g_per_kg: Number(e.target.value),
+                          }))
+                        }
+                      />
+                    </Field>
+                  </div>
+                  <div style={twoCol}>
+                    <Field label="Net Carbs (g)" hint="Default: 20g">
+                      <input
+                        style={inputStyle}
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={advancedSettings.net_carbs_g}
+                        onChange={(e) =>
+                          setAdvancedSettings((prev) => ({
+                            ...prev,
+                            net_carbs_g: Number(e.target.value),
+                          }))
+                        }
+                      />
+                    </Field>
+                    <Field label="Body Fat %" hint="Leave empty for estimated">
+                      <input
+                        style={inputStyle}
+                        type="number"
+                        min={1}
+                        max={75}
+                        placeholder="Auto"
+                        value={advancedSettings.body_fat_percent_override}
+                        onChange={(e) =>
+                          setAdvancedSettings((prev) => ({
+                            ...prev,
+                            body_fat_percent_override: e.target.value,
+                          }))
+                        }
+                      />
+                    </Field>
+                  </div>
+                </div>
+              )}
 
               <button
                 onClick={onCalculate}
