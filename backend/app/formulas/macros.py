@@ -14,6 +14,8 @@ def calculate_keto_macros(
     calories_total: float,
     weight_kg: float,
     goal: Goal,
+    net_carbs_g: float | None = None,
+    protein_g_per_kg: float | None = None,
 ) -> tuple[float, float, float, float]:
     """
     Calculate keto macros based on goal.
@@ -22,8 +24,8 @@ def calculate_keto_macros(
         (calories_total, protein_g, fat_g, net_carbs_g)
 
     Rules:
-    - Net carbs fixed at 20g
-    - Protein depends on goal
+    - Net carbs defaults to 20g if not specified
+    - Protein depends on goal if not specified
     - Fat fills remaining calories
     """
     if calories_total <= 0:
@@ -31,11 +33,16 @@ def calculate_keto_macros(
     if weight_kg <= 0:
         raise ValueError("weight_kg must be > 0")
 
-    protein_g_per_kg = PROTEIN_G_PER_KG_BY_GOAL[goal]
-    protein_g = weight_kg * protein_g_per_kg
+    # Use provided values or fall back to defaults
+    actual_net_carbs = net_carbs_g if net_carbs_g is not None else NET_CARBS_G
+    actual_protein_per_kg = (
+        protein_g_per_kg if protein_g_per_kg is not None else PROTEIN_G_PER_KG_BY_GOAL[goal]
+    )
+
+    protein_g = weight_kg * actual_protein_per_kg
 
     protein_cal = protein_g * 4.0
-    carbs_cal = NET_CARBS_G * 4.0
+    carbs_cal = actual_net_carbs * 4.0
 
     fat_cal = calories_total - (protein_cal + carbs_cal)
     if fat_cal < 0:
@@ -47,5 +54,5 @@ def calculate_keto_macros(
         float(calories_total),
         float(protein_g),
         float(fat_g),
-        float(NET_CARBS_G),
+        float(actual_net_carbs),
     )

@@ -24,15 +24,25 @@ def calculate_all(user: UserInput, *, forecast_weeks: int = 24) -> CalcOutput:
 
     tdee = calculate_tdee(bmr=bmr, activity_level=user.activity_level)
 
-    bf = estimate_body_fat_percent_from_bmi(bmi=bmi, age_years=norm.age_years, sex=user.sex)
+    # Use body fat override if provided, otherwise estimate from BMI
+    if user.body_fat_percent_override is not None:
+        bf = user.body_fat_percent_override
+    else:
+        bf = estimate_body_fat_percent_from_bmi(bmi=bmi, age_years=norm.age_years, sex=user.sex)
+
     ffmi = calculate_ffmi(weight_kg=norm.weight_kg, height_cm=norm.height_cm, body_fat_percent=bf)
 
     calories_target = calories_target_from_goal(tdee=tdee, goal=user.goal)
+
+    # Apply calorie modifier as percentage (e.g., -20 = -20%)
+    calories_target = calories_target * (1 + user.calorie_modifier / 100)
 
     cal, protein_g, fat_g, net_carbs_g = calculate_keto_macros(
         calories_total=calories_target,
         weight_kg=norm.weight_kg,
         goal=user.goal,
+        net_carbs_g=user.net_carbs_g,
+        protein_g_per_kg=user.protein_g_per_kg,
     )
 
     forecast_pts = forecast_weight_kg(

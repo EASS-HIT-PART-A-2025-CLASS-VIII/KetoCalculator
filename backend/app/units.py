@@ -13,8 +13,8 @@ class NormalizedInputs:
     height_cm: float
     weight_kg: float
     activity_level: str
-    net_carbs_g: float
-    protein_g_per_kg: float
+    net_carbs_g: float | None
+    protein_g_per_kg: float | None
 
 
 def normalize_inputs(user: UserInput) -> NormalizedInputs:
@@ -35,6 +35,6 @@ def normalize_inputs(user: UserInput) -> NormalizedInputs:
         height_cm=float(height_cm),
         weight_kg=float(weight_kg),
         activity_level=user.activity_level.value,
-        net_carbs_g=float(user.net_carbs_g),
-        protein_g_per_kg=float(user.protein_g_per_kg),
+        net_carbs_g=user.net_carbs_g,
+        protein_g_per_kg=user.protein_g_per_kg,
     )

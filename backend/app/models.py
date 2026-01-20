@@ -65,8 +65,10 @@ class UserInput(BaseModel):
 
     activity_level: ActivityLevel
 
-    net_carbs_g: float = Field(default=25, ge=0, le=100)
-    protein_g_per_kg: float = Field(default=1.8, ge=0.5, le=4.0)
+    net_carbs_g: float | None = Field(default=None, ge=0, le=100)
+    protein_g_per_kg: float | None = Field(default=None, ge=0.5, le=4.0)
+    calorie_modifier: float = Field(default=0, ge=-1000, le=1000)
+    body_fat_percent_override: float | None = Field(default=None, ge=1, le=75)
 
     dietary: DietaryPreferences = Field(default_factory=DietaryPreferences)
 
